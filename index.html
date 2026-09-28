@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Atreyu — please help me get home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #13294a; --navy-2: #1d3b66; --gold: #d4a64a; --gold-2: #f0cf85;
+    --ink: #1b1b1b; --paper: #faf6ee; --muted: #6b665c; --green: #1f8a4c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.5 Inter, system-ui, sans-serif; }
+  .hero { background: radial-gradient(120% 90% at 50% 0%, var(--navy-2), var(--navy)); color: #fff; text-align: center;
+          padding: 28px 16px 64px; border-bottom: 6px solid var(--gold); }
+  .photo { width: 168px; height: 168px; border-radius: 50%; margin: 0 auto 14px; border: 5px solid var(--gold);
+           background: var(--navy-2) center/cover no-repeat; display: grid; place-items: center; font-size: 64px; }
+  h1 { font-family: "Grenze Gotisch", Georgia, serif; font-size: 58px; line-height: 1; margin: 0; color: var(--gold-2);
+       letter-spacing: 0.5px; }
+  .tag { margin: 10px 0 0; font-size: 19px; opacity: .92; }
+  main { max-width: 520px; margin: -40px auto 0; padding: 0 16px 40px; }
+  .card { background: #fff; border-radius: 18px; box-shadow: 0 6px 24px rgba(19, 41, 74, .12); padding: 20px; margin-bottom: 16px; }
+  .lost { font-weight: 700; font-size: 20px; margin: 0 0 14px; text-align: center; }
+  .btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 58px; margin: 10px 0 0;
+         border-radius: 14px; border: 0; font: 700 19px Inter, system-ui, sans-serif; text-decoration: none; cursor: pointer; }
+  .call { background: var(--green); color: #fff; }
+  .text { background: var(--navy); color: #fff; }
+  .loc { background: #fff; color: var(--navy); border: 2px solid var(--navy); }
+  h2 { font-size: 15px; letter-spacing: .08em; text-transform: uppercase; color: var(--navy-2); margin: 0 0 10px; }
+  dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; }
+  dt { color: var(--muted); } dd { margin: 0; font-weight: 600; }
+  .note { background: #fff7e0; border-left: 4px solid var(--gold); padding: 10px 12px; border-radius: 8px; margin-top: 12px; }
+  .full { padding: 0; overflow: hidden; margin-left: 0; margin-right: 0; }
+  .full img { display: block; width: 100%; height: auto; }
+  .full figcaption { padding: 10px 16px 12px; font-weight: 600; color: var(--navy-2); text-align: center; }
+  .person { border-top: 1px solid #eee4d0; padding-top: 12px; margin-top: 12px; }
+  .person:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
+  .pname { font-weight: 700; text-align: center; margin: 0; }
+  .pnum { text-align: center; color: var(--muted); font-size: 15px; margin: 0 0 2px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row .btn { margin-top: 8px; font-size: 17px; }
+  #locpick .btn { font-size: 17px; }
+  .addr { font-size: 18px; font-weight: 600; margin: 0; }
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 10px 16px 30px; }
+  #locmsg { font-size: 14px; color: var(--muted); text-align: center; min-height: 1em; margin: 6px 0 0; }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="photo" id="photo">🐾</div>
+  <h1 id="name">Atreyu</h1>
+  <p class="tag" id="tagline">Hi! If you're reading this, I might be lost.</p>
+</header>
+
+<main>
+  <section class="card">
+    <p class="lost">Please help me get home ❤️</p>
+    <div id="people"></div>
+    <button class="btn loc" id="loc" type="button">📍 Send them where I am</button>
+    <div id="locpick" hidden></div>
+    <p id="locmsg"></p>
+  </section>
+
+  <section class="card" id="homeCard">
+    <h2>My home</h2>
+    <p class="addr" id="addr"></p>
+    <a class="btn loc" id="map" href="#" target="_blank" rel="noopener">🏠 Directions to my home</a>
+  </section>
+
+  <figure class="card full" id="fullCard">
+    <img id="fullPhoto" alt="" loading="lazy">
+    <figcaption>This is me!</figcaption>
+  </figure>
+
+  <section class="card" id="aboutCard">
+    <h2>About me</h2>
+    <dl id="about"></dl>
+    <div class="note" id="note"></div>
+  </section>
+</main>
+<footer>Thank you for helping! 🐶</footer>
+
+<script>
+/* ===== EDIT ONLY THIS BLOCK ===== */
+const PET = {
+  name: "Atreyu",
+  photo: "atreyu.jpg",                // round face photo (file next to this page); empty = paw icon
+  fullPhoto: "atreyu-full.jpg",       // big "This is me!" photo; empty = hidden
+  owners: [                          // each gets Call + Text buttons, in this order
+    // phone is base64 so scrapers/search don't see plain numbers; to change one, in any browser console run
+    //   btoa("+1 604 555 0123")   and paste the result here
+    { name: "Livio Maynard", phone: "KzEgNzc4IDk1MiA4OTk3" },
+    { name: "Flavia Gomes",  phone: "KzEgNzc4IDI1MSA2MDc1" },
+  ],
+  address: "",                       // full street address shows a directions card; empty = hidden (privacy)
+  textMessage: "Hi! I found Atreyu.",
+  about: {                            // shown as a list; delete any line you don't want
+    "Looks": "White, fluffy, pointy ears",
+    "Home area": "Vancouver, BC",
+  },
+  note: "",                           // e.g. medical needs or "Nervous with other dogs"; empty = hidden
+};
+/* ================================ */
+
+const $ = id => document.getElementById(id);
+const telOf = p => p.replace(/[^\d+]/g, "");
+const sms = (phone, body) => `sms:${telOf(phone)}${/iPhone|iPad/.test(navigator.userAgent) ? "&" : "?"}body=${encodeURIComponent(body)}`;
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; };
+document.title = `${PET.name}: please help me get home`;
+$("name").textContent = PET.name;
+if (PET.photo) { $("photo").style.backgroundImage = `url("${PET.photo}")`; $("photo").textContent = ""; }
+if (PET.fullPhoto) { $("fullPhoto").src = PET.fullPhoto; $("fullPhoto").alt = `${PET.name}, full body`; } else $("fullCard").remove();
+for (const o of PET.owners) o.phone = atob(o.phone);
+for (const o of PET.owners) {
+  const first = o.name.split(" ")[0];
+  const box = el("div", "person"), row = el("div", "row");
+  const call = el("a", "btn call", `📞 Call ${first}`); call.href = `tel:${telOf(o.phone)}`;
+  const text = el("a", "btn text", `💬 Text ${first}`); text.href = sms(o.phone, PET.textMessage);
+  row.append(call, text); box.append(el("p", "pname", o.name), el("p", "pnum", o.phone), row);
+  $("people").append(box);
+}
+if (PET.address) {
+  $("addr").textContent = PET.address;
+  $("map").href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(PET.address)}`;
+} else $("homeCard").remove();
+const rows = Object.entries(PET.about);
+for (const [k, v] of rows) {
+  const dt = document.createElement("dt"), dd = document.createElement("dd");
+  dt.textContent = k; dd.textContent = v; $("about").append(dt, dd);
+}
+if (PET.note) $("note").textContent = PET.note; else $("note").remove();
+if (!rows.length && !PET.note) $("aboutCard").remove();
+
+$("loc").addEventListener("click", () => {
+  if (!navigator.geolocation) { $("locmsg").textContent = "Location isn't available on this phone. Please call or text instead."; return; }
+  $("locmsg").textContent = "Getting your location…";
+  navigator.geolocation.getCurrentPosition(
+    p => {
+      const url = `https://maps.google.com/?q=${p.coords.latitude.toFixed(5)},${p.coords.longitude.toFixed(5)}`;
+      $("locmsg").textContent = "Got it! Who should I send it to?";
+      $("locpick").replaceChildren(...PET.owners.map(o => {
+        const b = el("a", "btn text", `📍 Send to ${o.name.split(" ")[0]}`); b.href = sms(o.phone, `${PET.textMessage} I'm here: ${url}`); return b;
+      }));
+      $("locpick").hidden = false; $("loc").hidden = true;
+    },
+    () => { $("locmsg").textContent = "Couldn't get the location. Please call or text instead."; },
+    { enableHighAccuracy: true, timeout: 15000 });
+});
+</script>
+</body>
+</html>
